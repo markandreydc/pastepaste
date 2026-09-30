@@ -1,3 +1,5 @@
+[![Deploy Server to Azure Container Apps (main)](https://github.com/markandreydc/pastepaste/actions/workflows/deploy-server.yml/badge.svg)](https://github.com/markandreydc/pastepaste/actions/workflows/deploy-server.yml)
+
 # Pastepaste
 
 Temporary, end-to-end encrypted text sharing between devices in the same room.
