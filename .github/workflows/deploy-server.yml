@@ -1,4 +1,4 @@
-name: Deploy Server to Azure Container Apps (main)
+name: Deploy Server to Azure Container Apps
 
 on:
   push:
