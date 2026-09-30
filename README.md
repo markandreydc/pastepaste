@@ -1,4 +1,4 @@
-[![Deploy Server to Azure Container Apps (main)](https://github.com/markandreydc/pastepaste/actions/workflows/deploy-server.yml/badge.svg)](https://github.com/markandreydc/pastepaste/actions/workflows/deploy-server.yml)
+[![Deploy Server to Azure Container Apps (main)](https://github.com/markandreydc/pastepaste/actions/workflows/deploy-server.yml/badge.svg)](https://github.com/markandreydc/pastepaste/actions/workflows/deploy-server.yml) [![Azure Static Web Apps CI/CD](https://github.com/markandreydc/pastepaste/actions/workflows/deploy-web.yml/badge.svg)](https://github.com/markandreydc/pastepaste/actions/workflows/deploy-web.yml)
 
 # Pastepaste
 
