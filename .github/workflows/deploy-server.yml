@@ -46,7 +46,7 @@ jobs:
         run: |
           az containerapp update \
             --name pastepaste-api \
-            --resource-group rg-pastepaste \
+            --resource-group rg-pastepaste-prod \
             --image ghcr.io/markandreydc/pastepaste-api:${{ github.sha }} \
             --min-replicas 0 \
             --max-replicas 1
@@ -55,5 +55,5 @@ jobs:
         run: |
           az containerapp ingress sticky-sessions set \
             --name pastepaste-api \
-            --resource-group rg-pastepaste \
+            --resource-group rg-pastepaste-prod \
             --affinity sticky
