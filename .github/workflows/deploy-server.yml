@@ -48,7 +48,7 @@ jobs:
             --name pastepaste-api \
             --resource-group RG-DEV \
             --image ghcr.io/markandreydc/pastepaste-api:${{ github.sha }} \
-            --min-replicas 1 \
+            --min-replicas 0 \
             --max-replicas 1
 
       - name: Enable sticky sessions
