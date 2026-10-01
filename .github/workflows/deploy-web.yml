@@ -14,8 +14,6 @@ jobs:
     defaults:
       run:
         working-directory: apps/web
-    env:
-      VITE_API_URL: https://api.pastepaste.markandrey.com
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7

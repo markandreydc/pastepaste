@@ -21,7 +21,17 @@ npm install
 npm run dev
 ```
 
-The frontend uses `http://localhost:8080` by default. Copy `.env.example` to `.env.local` if a different backend URL is needed.
+Development loads `VITE_API_URL` from the committed `apps/web/.env.development`, which points to `http://localhost:8080`. No `.env` or `.env.local` setup is required. The committed `.env.example` documents the configuration format but is not loaded automatically. Only public frontend configuration belongs in these files; never store secrets in `VITE_*` variables.
+
+### Production deployment
+
+Production builds load `VITE_API_URL` from the committed `apps/web/.env.production`, which points to `https://api.pastepaste.markandrey.com`. This public URL is not a secret.
+
+On any hosting platform, use `apps/web` as the project directory, run `npm ci` and `npm run build`, and publish `dist`. Configure an SPA fallback to `index.html` so room URLs work when opened directly; `vercel.json` already provides this for Vercel.
+
+Build-environment variables take precedence over `.env` files. Remove stale `VITE_API_URL` overrides from hosting settings so the production default is used. No platform-specific API URL configuration is required unless you want to override that default.
+
+Vite embeds the API URL into the frontend during the build, so changing it requires rebuilding and redeploying. If the backend moves but the custom API domain stays the same, update its DNS and domain binding instead; no frontend rebuild is needed.
 
 ### Commands
 

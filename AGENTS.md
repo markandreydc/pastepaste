@@ -30,7 +30,9 @@ dotnet build
 
 ## Configuration
 
-- `VITE_API_URL` in `apps/web/.env.local` — backend base URL (default `http://localhost:8080`). Copy `.env.example` to `.env.local` to override.
+- `VITE_API_URL` in `apps/web/.env.development` — development backend base URL (`http://localhost:8080`), loaded by `npm run dev`.
+- `VITE_API_URL` in `apps/web/.env.production` — production backend base URL (`https://api.pastepaste.markandrey.com`), loaded by `npm run build`.
+- `apps/web/.env.example` — public configuration template; not loaded automatically. Build-process environment variables override the files above. Never put secrets in `VITE_*` variables.
 - `AllowedOrigins` in `apps/server/appsettings.json` — CORS origins (default `http://localhost:5173`).
 
 ## Architecture
