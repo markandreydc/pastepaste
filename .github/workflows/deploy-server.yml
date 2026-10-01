@@ -45,7 +45,7 @@ jobs:
       - name: Deploy to Azure Container Apps
         run: |
           az containerapp update \
-            --name pastepaste-api \
+            --name ca-pastepaste-api-prod \
             --resource-group rg-pastepaste-prod \
             --image ghcr.io/markandreydc/pastepaste-api:${{ github.sha }} \
             --min-replicas 0 \
@@ -54,6 +54,6 @@ jobs:
       - name: Enable sticky sessions
         run: |
           az containerapp ingress sticky-sessions set \
-            --name pastepaste-api \
+            --name ca-pastepaste-api-prod \
             --resource-group rg-pastepaste-prod \
             --affinity sticky

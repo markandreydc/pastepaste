@@ -15,7 +15,7 @@ jobs:
       run:
         working-directory: apps/web
     env:
-      VITE_API_URL: https://pastepaste-api.orangeocean-744e4fb1.southeastasia.azurecontainerapps.io
+      VITE_API_URL: https://api.pastepaste.markandrey.com
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
