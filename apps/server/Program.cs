@@ -3,8 +3,9 @@ using Pastepaste.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var allowedOrigins = builder.Configuration["AllowedOrigins"]?
-    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+var allowedOrigins = builder.Configuration
+    .GetSection("AllowedOrigins")
+    .Get<string[]>()
     ?? ["http://localhost:5173"];
 
 builder.Services.AddSingleton<RoomService>();
