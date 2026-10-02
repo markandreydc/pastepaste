@@ -2,7 +2,7 @@
 
 # Pastepaste
 
-Temporary, end-to-end encrypted text sharing between devices in the same room.
+Temporary, text sharing between devices in the same room.
 
 ![Editor screenshot](screenshots/editor.png)
 
@@ -53,7 +53,7 @@ Build the frontend in `apps/web` with `npm ci` and `npm run build`, then publish
 
 ## How it works
 
-Text is encrypted in the browser with AES-GCM. The server stores only encrypted payloads in memory. Rooms disappear when the last device leaves or the backend restarts. Five-character room codes are convenient but are not strong encryption secrets.
+Text is encrypted in the browser with AES-GCM. The server stores only encrypted payloads in memory. Rooms disappear when the last device leaves or the backend restarts.
 
 ## License
 

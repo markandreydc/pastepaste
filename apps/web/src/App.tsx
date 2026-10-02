@@ -280,7 +280,7 @@ function App() {
             paste<span className="text-[#78951d] dark:text-[#d2f36b]">paste</span>
           </div>
           <p className="mb-5 text-sm text-[#687064] dark:text-[#989c91]">
-            Share text between devices in the same room — end-to-end encrypted and gone when you leave.
+            Share text between devices in the same room — browser-encrypted and gone when everyone leaves.
           </p>
           <p className="text-sm text-[#687064] dark:text-[#989c91]">{busy ? status : error}</p>
           {!busy && error && (
@@ -312,7 +312,7 @@ function App() {
               paste<span className="text-[#78951d] dark:text-[#d2f36b]">paste</span>
             </button>
             <p className="hidden text-xs text-[#687064] dark:text-[#989c91] lg:block">
-              Private, encrypted, ephemeral.
+              Browser-encrypted. Temporary.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs text-[#687064] dark:text-[#989c91] sm:gap-3">
@@ -432,7 +432,7 @@ function App() {
               ref={textareaRef}
               value={text}
               onChange={(event) => void updateText(event.target.value)}
-              placeholder="Share text between devices in the same room — end-to-end encrypted and gone when you leave."
+              placeholder="Share text between devices in the same room — browser-encrypted and gone when everyone leaves."
               className="min-h-[40vh] flex-1 resize-none bg-transparent p-6 text-base leading-7 text-[#20251d] outline-none placeholder:text-[#9da49a] dark:text-[#f1f0eb] dark:placeholder:text-[#62675d] sm:min-h-[55vh] sm:p-8"
               autoFocus
             />

@@ -4,7 +4,7 @@ Guidance for AI coding agents working in this repository.
 
 ## Overview
 
-Pastepaste is a temporary, end-to-end-encrypted text sharing tool between devices in the same room. Monorepo with two apps:
+Pastepaste is a temporary, browser-encrypted text sharing tool between devices in the same room. Encryption keys are derived from room codes and server-generated salts, so this is not end-to-end encryption against the server operator. Monorepo with two apps:
 
 - `apps/web` — React 19, TypeScript, Vite, Tailwind CSS v4
 - `apps/server` — ASP.NET Core minimal API + SignalR, .NET 10
