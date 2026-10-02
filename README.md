@@ -6,14 +6,31 @@ Temporary, end-to-end encrypted text sharing between devices in the same room.
 
 ![Editor screenshot](screenshots/editor.png)
 
-## Monorepo layout
+## Website
 
-- `apps/web` — React, TypeScript, Vite, and Tailwind CSS frontend
-- `apps/server` — ASP.NET Core minimal API and SignalR backend
+Main website: https://pastepaste.markandrey.com
 
-## Web (`apps/web`)
+Backup deployments:
 
-### Local development
+- https://pastepaste.vercel.app
+- https://pastepaste.madc.workers.dev
+- https://pastepastepaste.pages.dev
+
+## Project structure
+
+- `apps/web` — React, TypeScript, Vite, and Tailwind CSS
+- `apps/server` — ASP.NET Core API and SignalR
+
+## Local development
+
+Run the backend:
+
+```bash
+cd apps/server
+dotnet run --urls http://localhost:8080
+```
+
+In another terminal, run the frontend:
 
 ```bash
 cd apps/web
@@ -21,71 +38,22 @@ npm install
 npm run dev
 ```
 
-Development loads `VITE_API_URL` from the committed `apps/web/.env.development`, which points to `http://localhost:8080`. No `.env` or `.env.local` setup is required. The committed `.env.example` documents the configuration format but is not loaded automatically. Only public frontend configuration belongs in these files; never store secrets in `VITE_*` variables.
+Open http://localhost:5173. Restart the backend after changes, or use `dotnet watch run`.
 
-### Production deployment
+## Configuration
 
-Production builds load `VITE_API_URL` from the committed `apps/web/.env.production`, which points to `https://api.pastepaste.markandrey.com`. This public URL is not a secret.
+- Frontend API URL: `apps/web/.env.development` for localhost; `.env.production` for `https://api.pastepaste.markandrey.com`.
+- Backend: `apps/server/appsettings.json` for shared settings; `.Development.json` and `.Production.json` for environment-specific CORS origins.
+- Local runs use Development; published apps default to Production unless configured otherwise.
+- Hosting environment variables override file settings. API URL changes require a frontend rebuild. Never put secrets in `VITE_*` variables.
 
-On any hosting platform, use `apps/web` as the project directory, run `npm ci` and `npm run build`, and publish `dist`. Configure an SPA fallback to `index.html` so room URLs work when opened directly; `vercel.json` already provides this for Vercel.
+## Deployment
 
-Build-environment variables take precedence over `.env` files. Remove stale `VITE_API_URL` overrides from hosting settings so the production default is used. No platform-specific API URL configuration is required unless you want to override that default.
+Build the frontend in `apps/web` with `npm ci` and `npm run build`, then publish `dist` with an SPA fallback to `index.html`. The backend runs in Docker on Azure Container Apps. Add new frontend origins to `apps/server/appsettings.Production.json` and redeploy the backend.
 
-Vite embeds the API URL into the frontend during the build, so changing it requires rebuilding and redeploying. If the backend moves but the custom API domain stays the same, update its DNS and domain binding instead; no frontend rebuild is needed.
+## How it works
 
-### Commands
-
-```bash
-npm run build    # tsc -b && vite build
-npm run lint     # oxlint
-```
-
-## Server (`apps/server`)
-
-### Local development
-
-```bash
-cd apps/server
-dotnet run --urls http://localhost:8080
-```
-
-`dotnet run` does not hot-reload. Restart the server process (or use `dotnet watch run`) after backend changes.
-
-### Docker
-
-Build and push the API image to Docker Hub:
-
-```bash
-docker buildx build \
-  --platform linux/amd64,linux/arm64 \
-  -t markandreydc/pastepaste-api:latest \
-  -t markandreydc/pastepaste-api:$(git rev-parse --short HEAD) \
-  --push .
-```
-
-And to GitHub Container Registry (use your GitHub PAT as the password):
-
-```bash
-docker login ghcr.io -u markandreydc
-
-docker buildx build \
-  --platform linux/amd64,linux/arm64 \
-  -t ghcr.io/markandreydc/pastepaste-api:latest \
-  -t ghcr.io/markandreydc/pastepaste-api:$(git rev-parse --short HEAD) \
-  --push .
-```
-
-## Static website
-
-- https://pastepaste.markandrey.com
-
-## Architecture
-
-- AES-GCM encryption in the browser
-- In-memory room state; no clipboard text is persisted
-- Docker deployment target for Azure Container Apps
-
-Rooms disappear when the last connected device leaves or the backend restarts. Five-character room codes are convenient for the alpha but are not strong encryption secrets.
+Text is encrypted in the browser with AES-GCM. The server stores only encrypted payloads in memory. Rooms disappear when the last device leaves or the backend restarts. Five-character room codes are convenient but are not strong encryption secrets.
 
 ## License
 
