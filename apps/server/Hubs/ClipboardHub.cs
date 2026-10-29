@@ -30,7 +30,7 @@ public sealed class ClipboardHub(RoomService rooms) : Hub
             ?? throw new HubException("Room not found.");
 
         rooms.UpdateClipboard(room, clipboard);
-        await Clients.Group(room.RoomCode).SendAsync("ClipboardUpdated", clipboard);
+        await Clients.OthersInGroup(room.RoomCode).SendAsync("ClipboardUpdated", clipboard);
     }
 
     public async Task LeaveRoom(string roomCode)

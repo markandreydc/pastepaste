@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { HubConnection } from '@microsoft/signalr'
-import {
-  decryptText,
-  deriveRoomKey,
-  encryptText,
-  type EncryptedText,
-} from './lib/crypto'
+import { deriveRoomKey } from './lib/crypto'
+import { createClipboardSync } from './lib/clipboardSync'
 import {
   connectToRoom,
   createConnection,
@@ -75,7 +71,8 @@ function App() {
   })
   const activeRoomRef = useRef<RoomResponse | null>(null)
   const connectionRef = useRef<HubConnection | null>(null)
-  const keyRef = useRef<CryptoKey | null>(null)
+  const clipboardSyncRef = useRef<ReturnType<typeof createClipboardSync> | null>(null)
+  const roomGenerationRef = useRef(0)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const copiedTimerRef = useRef<number | null>(null)
   const clearTimerRef = useRef<number | null>(null)
@@ -119,6 +116,9 @@ function App() {
     void start()
     return () => {
       cancelled = true
+      roomGenerationRef.current += 1
+      clipboardSyncRef.current?.dispose()
+      clipboardSyncRef.current = null
       if (connectionRef.current && activeRoomRef.current) {
         void disconnectFromRoom(connectionRef.current, activeRoomRef.current.roomCode)
       }
@@ -172,10 +172,17 @@ function App() {
   }
 
   async function enterRoom(response: RoomResponse) {
+    const generation = ++roomGenerationRef.current
+    const isCurrent = () => generation === roomGenerationRef.current
+    clipboardSyncRef.current?.dispose()
+    clipboardSyncRef.current = null
+
     if (connectionRef.current && activeRoomRef.current) {
-      await disconnectFromRoom(connectionRef.current, activeRoomRef.current.roomCode)
+      const previousConnection = connectionRef.current
       connectionRef.current = null
+      await disconnectFromRoom(previousConnection, activeRoomRef.current.roomCode)
     }
+    if (!isCurrent()) return
 
     setStatus('Opening secure...')
     setMyName(null)
@@ -184,52 +191,64 @@ function App() {
     setCopied(null)
 
     const key = await deriveRoomKey(response.roomCode, response.salt)
+    if (!isCurrent()) return
     const connection = createConnection()
+    const clipboardSync = createClipboardSync({
+      key,
+      send: (payload) => sendClipboard(connection, response.roomCode, payload),
+      onText: setText,
+      onSynced: () => setStatus('Synced just now'),
+      onSendError: () => setStatus('Waiting to reconnect'),
+      onReceiveError: () => setError('This update could not be decrypted.'),
+    })
+    clipboardSyncRef.current = clipboardSync
+    connectionRef.current = connection
 
-    const receiveClipboard = async (payload: EncryptedText) => {
-      try {
-        setText(await decryptText(key, payload))
-        setStatus('Synced just now')
-      } catch {
-        setError('This update could not be decrypted.')
-      }
-    }
-
-    connection.on('ClipboardUpdated', receiveClipboard)
-    connection.on('ClipboardSnapshot', receiveClipboard)
+    connection.on('ClipboardUpdated', clipboardSync.receive)
+    connection.on('ClipboardSnapshot', clipboardSync.receive)
     connection.on('NameAssigned', (name: string) => {
+      if (!isCurrent()) return
       setMyName(name)
       sessionStorage.setItem(`pastepaste:name:${response.roomCode}`, name)
     })
-    connection.on('ParticipantsUpdated', (names: string[]) => setParticipants(names))
-    connection.onreconnecting(() => setStatus('Reconnecting...'))
-    connection.onreconnected(() => setStatus('Connected'))
-    connection.onclose(() => setStatus('Disconnected'))
+    connection.on('ParticipantsUpdated', (names: string[]) => {
+      if (isCurrent()) setParticipants(names)
+    })
+    connection.onreconnecting(() => {
+      if (isCurrent()) setStatus('Reconnecting...')
+    })
+    connection.onreconnected(() => {
+      if (isCurrent()) setStatus('Connected')
+    })
+    connection.onclose(() => {
+      if (isCurrent()) setStatus('Disconnected')
+    })
 
     const preferredName = sessionStorage.getItem(`pastepaste:name:${response.roomCode}`) ?? ''
-    await connectToRoom(connection, response.roomCode, preferredName)
-    connectionRef.current = connection
-    keyRef.current = key
+    try {
+      await connectToRoom(connection, response.roomCode, preferredName)
+    } catch (error) {
+      clipboardSync.dispose()
+      await disconnectFromRoom(connection, response.roomCode)
+      if (!isCurrent()) return
+      clipboardSyncRef.current = null
+      connectionRef.current = null
+      throw error
+    }
+    if (!isCurrent()) {
+      clipboardSync.dispose()
+      await disconnectFromRoom(connection, response.roomCode)
+      return
+    }
     window.history.replaceState(null, '', `/${response.roomCode}`)
     activeRoomRef.current = response
     setActiveRoom(response)
     setStatus('Connected')
   }
 
-  async function updateText(nextText: string) {
+  function updateText(nextText: string) {
     setText(nextText)
-    if (!activeRoom || !connectionRef.current || !keyRef.current) return
-
-    try {
-      await sendClipboard(
-        connectionRef.current,
-        activeRoom.roomCode,
-        await encryptText(keyRef.current, nextText),
-      )
-      setStatus('Synced just now')
-    } catch {
-      setStatus('Waiting to reconnect')
-    }
+    clipboardSyncRef.current?.send(nextText)
   }
 
   function showCopied(target: 'code' | 'link' | 'text') {
@@ -431,7 +450,7 @@ function App() {
             <textarea
               ref={textareaRef}
               value={text}
-              onChange={(event) => void updateText(event.target.value)}
+              onChange={(event) => updateText(event.target.value)}
               placeholder="Share text between devices in the same room — browser-encrypted and gone when everyone leaves."
               className="min-h-[40vh] flex-1 resize-none bg-transparent p-6 text-base leading-7 text-[#20251d] outline-none placeholder:text-[#9da49a] dark:text-[#f1f0eb] dark:placeholder:text-[#62675d] sm:min-h-[55vh] sm:p-8"
               autoFocus
